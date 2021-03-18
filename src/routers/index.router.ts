@@ -1,5 +1,11 @@
 import * as express from 'express';
-import { redisIsUserWaiting, redisPopUser, redisSetInQueue } from '../services/redis.service';
+import {
+  redisIsUserWaiting,
+  redisPopUser,
+  redisSetInQueue
+} from '../services/redis.service';
+import { uqMakePair } from "../services/user-queue.service";
+import { sendMessageFrom } from "../services/websocket.service";
 
 export const IndexRouter = express.Router();
 
@@ -39,7 +45,19 @@ IndexRouter.post('/add-user', (req: express.Request, res: express.Response) => {
       const isWaiting = await redisIsUserWaiting(+userId);
       res.json({ queued: true, ...isWaiting });
     } else {
+      await uqMakePair(+userId, +enemy);
       res.json({ queued: false, enemy });
     }
+  })();
+});
+
+IndexRouter.post('/message', (req: express.Request, res: express.Response) => {
+  const fromUserId: number = req.body.fromUserId;
+  const text: string = req.body.text;
+  console.log('/message', { fromUserId, text });
+  (async () => {
+    const sent = await sendMessageFrom(fromUserId, text);
+
+    res.json({ success: sent });
   })();
 });

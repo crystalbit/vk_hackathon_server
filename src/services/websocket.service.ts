@@ -1,6 +1,8 @@
 import { createServer, Server as HTTPServer } from 'http';
 import * as express from 'express';
 import { Server } from 'socket.io';
+import {clearSocket, getSocket, setSocket} from "../stores/users.store";
+import {redisGetPair, redisGetQueueSize} from "./redis.service";
 
 const app = express();
 
@@ -18,16 +20,35 @@ server.listen(process.env.WS_PORT ?? 6000, () => {
 });
 
 io.on('connect', (socket) => {
-  console.log('Connected client', socket.handshake.query);
-  setInterval(() => {
-    socket.send('pivo', { a: 5});
-  }, 2000);
+  const { userId } = socket.handshake.query;
+
+  setSocket(+userId, socket);
+
   socket.on('message', (m) => {
     console.log('[server](message): %s', JSON.stringify(m));
     io.emit('message', m);
   });
 
   socket.on('disconnect', () => {
+    clearSocket(+userId);
     console.log('Client disconnected');
   });
 });
+
+export const sendMessageFrom = async (fromUser: number, text: string): Promise<boolean> => {
+  const pair = await redisGetPair(fromUser);
+  if (!pair) {
+    // TODO error message
+    return false;
+  }
+  const socket = getSocket(+pair);
+  socket.emit('text', text);
+  return true;
+};
+
+export const sendWerePaired = async (user1: number, user2: number) => {
+  const socket1 = getSocket(user1);
+  const socket2 = getSocket(user2);
+  socket1?.emit('paired', user2);
+  socket2?.emit('paired', user1); // TODO assert
+};

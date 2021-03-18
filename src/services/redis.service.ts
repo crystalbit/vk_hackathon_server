@@ -10,8 +10,26 @@ const client = redis().createClient();
  */
 const USERS_QUEUE_KEY = 'users_queue';
 const USERS_MAP_KEY = 'users_map'; // map userId to time signed
+const USERS_GAME_PAIRS_MAP_KEY = 'game_pairs_map';
 
-const MS_WAIT_IN_QUEUE = 10 * 1000;
+const MS_WAIT_IN_QUEUE = 60 * 1000;
+
+export const redisMakeGamePair = async (user1: number, user2: number) => {
+  // TODO game begin notifications
+  await client.hset(USERS_GAME_PAIRS_MAP_KEY, user1.toString(), user2.toString());
+  await client.hset(USERS_GAME_PAIRS_MAP_KEY, user2.toString(), user1.toString());
+};
+
+export const redisEndGame = async (userId: number) => {
+  const pairedUser = await client.hget(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
+  // TODO service end game messages
+  await client.hdel(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
+  await client.hdel(USERS_GAME_PAIRS_MAP_KEY, pairedUser);
+};
+
+export const redisGetPair = async (userId: number): Promise<string | null> => {
+  return client.hget(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
+};
 
 export const redisSetInQueue = async (userId: number): Promise<boolean> => {
   if (await redisIsUserWaiting(userId)) {
