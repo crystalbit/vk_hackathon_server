@@ -37,7 +37,6 @@ IndexRouter.post('/add-user', (req: express.Request, res: express.Response) => {
   (async () => {
     // TODO try .. catch
     const enemy = await redisPopUser();
-    console.log({ enemy });
     // если пока нет противника - помещаем в очередь
     // иначе даём противника
     if (enemy === null) {

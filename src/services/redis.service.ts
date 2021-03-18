@@ -22,9 +22,10 @@ export const redisMakeGamePair = async (user1: number, user2: number) => {
 
 export const redisEndGame = async (userId: number) => {
   const pairedUser = await client.hget(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
-  console.log({ pairedUser, userId });
   await client.hdel(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
-  await client.hdel(USERS_GAME_PAIRS_MAP_KEY, pairedUser);
+  if (pairedUser) {
+    await client.hdel(USERS_GAME_PAIRS_MAP_KEY, pairedUser);
+  }
 };
 
 export const redisGetPair = async (userId: number): Promise<string | null> => {
@@ -81,7 +82,6 @@ export const redisIsUserWaiting = async (userId: number): Promise<{
   now: number;
 } | null> => {
   const time = await client.hget(USERS_MAP_KEY, userId.toString());
-  console.log({ time }, +new Date() - time);
   if (time !== null && +new Date() - time <= MS_WAIT_IN_QUEUE) {
     return {
       start: time,
