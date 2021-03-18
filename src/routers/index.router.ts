@@ -5,7 +5,7 @@ import {
   redisSetInQueue
 } from '../services/redis.service';
 import { uqMakePair } from "../services/user-queue.service";
-import { sendMessageFrom } from "../services/websocket.service";
+import {sendEnemyFinished, sendMessageFrom} from "../services/websocket.service";
 
 export const IndexRouter = express.Router();
 
@@ -67,8 +67,11 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
   const payload: string = req.body.payload;
   console.log('/action', { fromUserId, action, payload });
   (async () => {
-    // const sent = await sendMessageFrom(fromUserId, text);
-
-    res.json({ success: true });
+    if (action === 'combination') {
+      await sendEnemyFinished(fromUserId);
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
   })();
 });

@@ -63,3 +63,17 @@ export const sendEnemyLeft = async (userId: number) => {
   const socket = getSocket(userId);
   socket.emit('enemy_left');
 };
+
+export const sendEnemyFinished = async (userId: number) => {
+  console.log('enemy finished', userId);
+  const pair = await redisGetPair(userId);
+  if (!pair) {
+    // TODO error message
+    return false;
+  }
+  const socket = getSocket(+pair);
+  if (!socket) {
+    return false;
+  }
+  socket.emit('enemy_finished');
+};
