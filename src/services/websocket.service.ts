@@ -6,9 +6,14 @@ const app = express();
 
 const server = createServer(app);
 
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET'],
+  },
+});
 
-server.listen(process.env.WS_PORT ?? 90, () => {
+server.listen(process.env.WS_PORT ?? 6000, () => {
   console.log('WS Started');
 });
 
