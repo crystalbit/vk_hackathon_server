@@ -44,9 +44,8 @@ export const sendMessageFrom = async (fromUser: number, text: string): Promise<b
     // TODO error message
     return false;
   }
-  console.log('отправим на', pair)
   const socket = getSocket(+pair);
-  if (!socket) {
+  if (!socket || text === '') {
     return false;
   }
   socket.emit('text', text);

@@ -60,3 +60,15 @@ IndexRouter.post('/message', (req: express.Request, res: express.Response) => {
     res.json({ success: sent });
   })();
 });
+
+IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
+  const fromUserId: number = req.body.fromUserId;
+  const action: string = req.body.action;
+  const payload: string = req.body.payload;
+  console.log('/action', { fromUserId, action, payload });
+  (async () => {
+    // const sent = await sendMessageFrom(fromUserId, text);
+
+    res.json({ success: true });
+  })();
+});
