@@ -2,7 +2,7 @@ import { createServer, Server as HTTPServer } from 'http';
 import * as express from 'express';
 import { Server } from 'socket.io';
 import {clearSocket, getSocket, setSocket} from "../stores/users.store";
-import {redisGetPair, redisGetQueueSize} from "./redis.service";
+import {redisEndGame, redisGetPair, redisGetQueueSize} from "./redis.service";
 
 const app = express();
 
@@ -29,8 +29,11 @@ io.on('connect', (socket) => {
     io.emit('message', m);
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
+    const pair = await redisGetPair(+userId);
     clearSocket(+userId);
+    await redisEndGame(+userId);
+    await sendEnemyLeft(+pair);
     console.log('Client disconnected');
   });
 });
@@ -55,4 +58,9 @@ export const sendWerePaired = async (user1: number, user2: number) => {
   const socket2 = getSocket(user2);
   socket1?.emit('paired', user2);
   socket2?.emit('paired', user1); // TODO assert
+};
+
+export const sendEnemyLeft = async (userId: number) => {
+  const socket = getSocket(userId);
+  socket.emit('enemy_left');
 };

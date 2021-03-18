@@ -22,7 +22,6 @@ export const redisMakeGamePair = async (user1: number, user2: number) => {
 
 export const redisEndGame = async (userId: number) => {
   const pairedUser = await client.hget(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
-  // TODO service end game messages
   await client.hdel(USERS_GAME_PAIRS_MAP_KEY, userId.toString());
   await client.hdel(USERS_GAME_PAIRS_MAP_KEY, pairedUser);
 };
