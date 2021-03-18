@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {redisGetQueueSize, redisIsUserWaiting, redisPopUser, redisSetInQueue} from "../services/redis.service";
+import { redisIsUserWaiting, redisPopUser, redisSetInQueue } from "../services/redis.service";
 
 export const IndexRouter = express.Router();
 
