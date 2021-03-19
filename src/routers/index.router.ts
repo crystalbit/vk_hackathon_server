@@ -1,11 +1,8 @@
 import * as express from 'express';
-import { RedisService } from 'dima-backend';
-import { uqMakePair } from "../services/user-queue.service";
-import {sendEnemyFinished, sendLose, sendMessageFrom, sendNeutral, sendWin} from "../services/websocket.service";
-import {clearCombination, Combination, getCombination, setCombination} from "../stores/combinations.store";
-import {compareCombinations} from "../services/logic.service";
-
-const redis = new RedisService();
+import { redis, sockets } from 'dima-backend';
+import { uqMakePair } from '../services/user-queue.service';
+import {clearCombination, Combination, getCombination, setCombination} from '../stores/combinations.store';
+import {compareCombinations} from '../services/logic.service';
 
 export const IndexRouter = express.Router();
 
@@ -50,7 +47,7 @@ IndexRouter.post('/message', (req: express.Request, res: express.Response) => {
   const text: string = req.body.text;
   console.log('/message', { fromUserId, text });
   (async () => {
-    const sent = await sendMessageFrom(fromUserId, text);
+    const sent = await sockets.sendMessageFrom(fromUserId, text);
 
     res.json({ success: sent });
   })();
@@ -66,7 +63,7 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
         stickers: Combination;
       };
       setCombination(+fromUserId, payloadData.stickers);
-      await sendEnemyFinished(fromUserId);
+      await sockets.sendEnemyFinished(fromUserId);
       res.json({ success: true });
       // проверим, оба ли юзера отправили комбинацию, и завершим игру в таком случае
       const pair = await redis.redisGetPair(+fromUserId);
@@ -75,14 +72,14 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
         const score = compareCombinations(payloadData.stickers, enemyCombination);
         await new Promise(rs => setTimeout(rs, 1000)); // драматическая пауза
         if (score > 0) {
-          await sendWin(+fromUserId, enemyCombination);
-          await sendLose(+pair, payloadData.stickers);
+          await sockets.sendWin(+fromUserId, enemyCombination);
+          await sockets.sendLose(+pair, payloadData.stickers);
         } else if (score < 0) {
-          await sendLose(+fromUserId, enemyCombination);
-          await sendWin(+pair, payloadData.stickers);
+          await sockets.sendLose(+fromUserId, enemyCombination);
+          await sockets.sendWin(+pair, payloadData.stickers);
         } else {
-          await sendNeutral(+fromUserId, enemyCombination);
-          await sendNeutral(+pair, payloadData.stickers);
+          await sockets.sendNeutral(+fromUserId, enemyCombination);
+          await sockets.sendNeutral(+pair, payloadData.stickers);
         }
         clearCombination(+fromUserId);
         clearCombination(+pair);
