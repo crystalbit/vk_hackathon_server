@@ -7,7 +7,7 @@ import {
 } from '../services/redis.service';
 import { uqMakePair } from "../services/user-queue.service";
 import {sendEnemyFinished, sendLose, sendMessageFrom, sendNeutral, sendWin} from "../services/websocket.service";
-import {Combination, getCombination, setCombination} from "../stores/combinations.store";
+import {clearCombination, Combination, getCombination, setCombination} from "../stores/combinations.store";
 import {compareCombinations} from "../services/logic.service";
 
 export const IndexRouter = express.Router();
@@ -93,6 +93,8 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
           await sendNeutral(+fromUserId, enemyCombination);
           await sendNeutral(+pair, payloadData.stickers);
         }
+        clearCombination(+fromUserId);
+        clearCombination(+pair);
       }
     } else {
       res.json({ success: false });
