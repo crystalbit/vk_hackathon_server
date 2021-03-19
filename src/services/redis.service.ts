@@ -90,3 +90,7 @@ export const redisIsUserWaiting = async (userId: number): Promise<{
   }
   return null;
 };
+
+export const redisTryFinishGame = async (user1: number, user2: number) => {
+
+};

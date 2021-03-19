@@ -1,11 +1,13 @@
 import * as express from 'express';
 import {
+  redisGetPair,
   redisIsUserWaiting,
   redisPopUser,
   redisSetInQueue
 } from '../services/redis.service';
 import { uqMakePair } from "../services/user-queue.service";
-import {sendEnemyFinished, sendMessageFrom} from "../services/websocket.service";
+import {sendEnemyFinished, sendLose, sendMessageFrom, sendWin} from "../services/websocket.service";
+import {Combination, getCombination, setCombination} from "../stores/combinations.store";
 
 export const IndexRouter = express.Router();
 
@@ -68,8 +70,20 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
   console.log('/action', { fromUserId, action, payload });
   (async () => {
     if (action === 'combination') {
+      const payloadData = JSON.parse(payload) as {
+        stickers: Combination;
+      };
+      setCombination(+fromUserId, payloadData.stickers);
       await sendEnemyFinished(fromUserId);
       res.json({ success: true });
+      // проверим, оба ли юзера отправили комбинацию, и завершим игру в таком случае
+      const pair = await redisGetPair(+fromUserId);
+      const enemyCombination = getCombination(+pair);
+      if (enemyCombination) {
+        await new Promise(rs => setTimeout(rs, 1000)); // драматическая пауза
+        await sendWin(+fromUserId, enemyCombination);
+        await sendLose(+pair, payloadData.stickers);
+      }
     } else {
       res.json({ success: false });
     }

@@ -3,6 +3,7 @@ import * as express from 'express';
 import { Server } from 'socket.io';
 import {clearSocket, getSocket, setSocket} from "../stores/users.store";
 import {redisEndGame, redisGetPair, redisGetQueueSize} from "./redis.service";
+import {Combination} from "../stores/combinations.store";
 
 const app = express();
 
@@ -76,4 +77,21 @@ export const sendEnemyFinished = async (userId: number) => {
     return false;
   }
   socket.emit('enemy_finished');
+  return true;
+};
+
+export const sendWin = async (userId: number, combination: Combination) => {
+  const socket = getSocket(+userId);
+  if (!socket) {
+    return false;
+  }
+  socket.emit('win', combination);
+};
+
+export const sendLose = async (userId: number, combination: Combination) => {
+  const socket = getSocket(+userId);
+  if (!socket) {
+    return false;
+  }
+  socket.emit('lose', combination);
 };
