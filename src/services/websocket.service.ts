@@ -62,7 +62,7 @@ export const sendWerePaired = async (user1: number, user2: number) => {
 
 export const sendEnemyLeft = async (userId: number) => {
   const socket = getSocket(userId);
-  socket.emit('enemy_left');
+  socket?.emit('enemy_left');
 };
 
 export const sendEnemyFinished = async (userId: number) => {

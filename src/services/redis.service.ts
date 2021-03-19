@@ -1,4 +1,5 @@
 import * as redis from 'promise-redis';
+import Timeout = NodeJS.Timeout;
 
 const client = redis().createClient();
 
@@ -14,8 +15,9 @@ const USERS_GAME_PAIRS_MAP_KEY = 'game_pairs_map';
 
 const MS_WAIT_IN_QUEUE = 60 * 1000;
 
+const timersToDelete = new Map<number, Timeout>();
+
 export const redisMakeGamePair = async (user1: number, user2: number) => {
-  // TODO game begin notifications
   await client.hset(USERS_GAME_PAIRS_MAP_KEY, user1.toString(), user2.toString());
   await client.hset(USERS_GAME_PAIRS_MAP_KEY, user2.toString(), user1.toString());
 };
@@ -39,11 +41,11 @@ export const redisSetInQueue = async (userId: number): Promise<boolean> => {
   }
   await client.rpush(USERS_QUEUE_KEY, userId.toString());
   await client.hset(USERS_MAP_KEY, userId.toString(), (+new Date()).toString());
-  setTimeout(() => {
+  timersToDelete.set(+userId, setTimeout(() => {
     client.hdel(USERS_MAP_KEY, userId.toString());
     // TODO catch, then, socket event
     console.log('deleted', userId);
-  }, MS_WAIT_IN_QUEUE);
+  }, MS_WAIT_IN_QUEUE));
   console.log(`Игрок ${userId} встал в ожидание, размер очереди: ${await redisGetQueueSize()}`);
   return true;
 };
@@ -66,6 +68,9 @@ export const redisPopUser = async (): Promise<string | null> => {
         valid = true;
       }
       await client.hdel(USERS_MAP_KEY, userId);
+      if (timersToDelete.has(+userId)) {
+        timersToDelete.delete(+userId);
+      }
     } else {
       valid = true; // null это валид, так как годится как ответ
     }
@@ -89,8 +94,4 @@ export const redisIsUserWaiting = async (userId: number): Promise<{
     };
   }
   return null;
-};
-
-export const redisTryFinishGame = async (user1: number, user2: number) => {
-
 };

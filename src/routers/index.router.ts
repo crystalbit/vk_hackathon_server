@@ -12,11 +12,6 @@ import {compareCombinations} from "../services/logic.service";
 
 export const IndexRouter = express.Router();
 
-IndexRouter.get('/', (req: express.Request, res: express.Response) => {
-  console.log('data fetched');
-  res.send('222');
-});
-
 IndexRouter.get('/my-state', (req: express.Request, res: express.Response) => {
   const userId = req.query.userId;
   (async () => {
@@ -68,7 +63,6 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
   const fromUserId: number = req.body.fromUserId;
   const action: string = req.body.action;
   const payload: string = req.body.payload;
-  console.log('/action', { fromUserId, action, payload });
   (async () => {
     if (action === 'combination') {
       const payloadData = JSON.parse(payload) as {
