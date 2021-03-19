@@ -35,5 +35,6 @@ export const compareCombinations = (a: Combination, b: Combination): number => {
   for (let i = 0; i < 3; i++) {
     score += stickerScore(a[0], b[0]);
   }
+  console.log({ a, b, score })
   return score;
 };
