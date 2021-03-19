@@ -33,7 +33,7 @@ export const compareCombinations = (a: Combination, b: Combination): number => {
   let score = 0;
   // сравниваем три стикера
   for (let i = 0; i < 3; i++) {
-    score += stickerScore(a[0], b[0]);
+    score += stickerScore(a[i], b[i]);
   }
   console.log({ a, b, score })
   return score;
