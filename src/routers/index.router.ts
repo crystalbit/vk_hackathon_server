@@ -5,12 +5,14 @@ import {sendEnemyFinished, sendLose, sendMessageFrom, sendNeutral, sendWin} from
 import {clearCombination, Combination, getCombination, setCombination} from "../stores/combinations.store";
 import {compareCombinations} from "../services/logic.service";
 
+const redis = new RedisService();
+
 export const IndexRouter = express.Router();
 
 IndexRouter.get('/my-state', (req: express.Request, res: express.Response) => {
   const userId = req.query.userId;
   (async () => {
-    const isWaiting = await RedisService.redisIsUserWaiting(+userId);
+    const isWaiting = await redis.redisIsUserWaiting(+userId);
     if (isWaiting) {
       res.json({
         state: 'waiting', // TODO ? isomorphic
@@ -29,12 +31,12 @@ IndexRouter.post('/add-user', (req: express.Request, res: express.Response) => {
   console.log('/add-user', userId);
   (async () => {
     // TODO try .. catch
-    const enemy = await RedisService.redisPopUser();
+    const enemy = await redis.redisPopUser();
     // если пока нет противника - помещаем в очередь
     // иначе даём противника
     if (enemy === null) {
-      await RedisService.redisSetInQueue(userId);
-      const isWaiting = await RedisService.redisIsUserWaiting(+userId);
+      await redis.redisSetInQueue(userId);
+      const isWaiting = await redis.redisIsUserWaiting(+userId);
       res.json({ queued: true, ...isWaiting });
     } else {
       await uqMakePair(+userId, +enemy);
@@ -67,7 +69,7 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
       await sendEnemyFinished(fromUserId);
       res.json({ success: true });
       // проверим, оба ли юзера отправили комбинацию, и завершим игру в таком случае
-      const pair = await RedisService.redisGetPair(+fromUserId);
+      const pair = await redis.redisGetPair(+fromUserId);
       const enemyCombination = getCombination(+pair);
       if (enemyCombination) {
         const score = compareCombinations(payloadData.stickers, enemyCombination);

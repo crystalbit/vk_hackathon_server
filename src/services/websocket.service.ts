@@ -5,6 +5,8 @@ import { clearSocket, getSocket, setSocket } from "../stores/users.store";
 import { RedisService } from "dima-backend";
 import { Combination } from "../stores/combinations.store";
 
+const redis = new RedisService();
+
 const app = express();
 
 const server = createServer(app);
@@ -31,16 +33,16 @@ io.on('connect', (socket) => {
   });
 
   socket.on('disconnect', async () => {
-    const pair = await RedisService.redisGetPair(+userId);
+    const pair = await redis.redisGetPair(+userId);
     clearSocket(+userId);
-    await RedisService.redisEndGame(+userId);
+    await redis.redisEndGame(+userId);
     await sendEnemyLeft(+pair);
     console.log('Client disconnected');
   });
 });
 
 export const sendMessageFrom = async (fromUser: number, text: string): Promise<boolean> => {
-  const pair = await RedisService.redisGetPair(fromUser);
+  const pair = await redis.redisGetPair(fromUser);
   if (!pair) {
     // TODO error message
     return false;
@@ -67,7 +69,7 @@ export const sendEnemyLeft = async (userId: number) => {
 
 export const sendEnemyFinished = async (userId: number) => {
   console.log('enemy finished', userId);
-  const pair = await RedisService.redisGetPair(userId);
+  const pair = await redis.redisGetPair(userId);
   if (!pair) {
     // TODO error message
     return false;
