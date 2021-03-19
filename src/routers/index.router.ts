@@ -1,8 +1,7 @@
 import * as express from 'express';
-import { redis, sockets } from 'dima-backend';
-import { uqMakePair } from '../services/user-queue.service';
-import {clearCombination, Combination, getCombination, setCombination} from '../stores/combinations.store';
-import {compareCombinations} from '../services/logic.service';
+import { redis, sockets, queues } from 'dima-backend';
+import { clearCombination, Combination, getCombination, setCombination } from '../stores/combinations.store';
+import { compareCombinations } from '../services/logic.service';
 
 export const IndexRouter = express.Router();
 
@@ -36,7 +35,7 @@ IndexRouter.post('/add-user', (req: express.Request, res: express.Response) => {
       const isWaiting = await redis.redisIsUserWaiting(+userId);
       res.json({ queued: true, ...isWaiting });
     } else {
-      await uqMakePair(+userId, +enemy);
+      await queues.uqMakePair(+userId, +enemy);
       res.json({ queued: false, enemy });
     }
   })();
