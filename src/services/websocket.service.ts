@@ -81,6 +81,7 @@ export const sendEnemyFinished = async (userId: number) => {
 };
 
 export const sendWin = async (userId: number, combination: Combination) => {
+  console.log('WIN')
   const socket = getSocket(+userId);
   if (!socket) {
     return false;
@@ -89,6 +90,7 @@ export const sendWin = async (userId: number, combination: Combination) => {
 };
 
 export const sendLose = async (userId: number, combination: Combination) => {
+  console.log('LOSE')
   const socket = getSocket(+userId);
   if (!socket) {
     return false;
@@ -97,6 +99,7 @@ export const sendLose = async (userId: number, combination: Combination) => {
 };
 
 export const sendNeutral = async (userId: number, combination: Combination) => {
+  console.log('NEUTRAL')
   const socket = getSocket(+userId);
   if (!socket) {
     return false;
