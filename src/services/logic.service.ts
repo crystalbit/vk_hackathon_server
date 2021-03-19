@@ -1,4 +1,4 @@
-import {Combination} from "../stores/combinations.store";
+import { Combination } from "../stores/combinations.store";
 
 // same on frontend
 export const StickerStates = {

@@ -1,10 +1,5 @@
 import * as express from 'express';
-import {
-  redisGetPair,
-  redisIsUserWaiting,
-  redisPopUser,
-  redisSetInQueue
-} from '../services/redis.service';
+import { RedisService } from 'dima-backend';
 import { uqMakePair } from "../services/user-queue.service";
 import {sendEnemyFinished, sendLose, sendMessageFrom, sendNeutral, sendWin} from "../services/websocket.service";
 import {clearCombination, Combination, getCombination, setCombination} from "../stores/combinations.store";
@@ -15,7 +10,7 @@ export const IndexRouter = express.Router();
 IndexRouter.get('/my-state', (req: express.Request, res: express.Response) => {
   const userId = req.query.userId;
   (async () => {
-    const isWaiting = await redisIsUserWaiting(+userId);
+    const isWaiting = await RedisService.redisIsUserWaiting(+userId);
     if (isWaiting) {
       res.json({
         state: 'waiting', // TODO ? isomorphic
@@ -34,12 +29,12 @@ IndexRouter.post('/add-user', (req: express.Request, res: express.Response) => {
   console.log('/add-user', userId);
   (async () => {
     // TODO try .. catch
-    const enemy = await redisPopUser();
+    const enemy = await RedisService.redisPopUser();
     // если пока нет противника - помещаем в очередь
     // иначе даём противника
     if (enemy === null) {
-      await redisSetInQueue(userId);
-      const isWaiting = await redisIsUserWaiting(+userId);
+      await RedisService.redisSetInQueue(userId);
+      const isWaiting = await RedisService.redisIsUserWaiting(+userId);
       res.json({ queued: true, ...isWaiting });
     } else {
       await uqMakePair(+userId, +enemy);
@@ -72,7 +67,7 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
       await sendEnemyFinished(fromUserId);
       res.json({ success: true });
       // проверим, оба ли юзера отправили комбинацию, и завершим игру в таком случае
-      const pair = await redisGetPair(+fromUserId);
+      const pair = await RedisService.redisGetPair(+fromUserId);
       const enemyCombination = getCombination(+pair);
       if (enemyCombination) {
         const score = compareCombinations(payloadData.stickers, enemyCombination);

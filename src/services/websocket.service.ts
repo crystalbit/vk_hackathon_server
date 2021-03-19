@@ -1,9 +1,9 @@
-import { createServer, Server as HTTPServer } from 'http';
+import { createServer } from 'http';
 import * as express from 'express';
 import { Server } from 'socket.io';
-import {clearSocket, getSocket, setSocket} from "../stores/users.store";
-import {redisEndGame, redisGetPair, redisGetQueueSize} from "./redis.service";
-import {Combination} from "../stores/combinations.store";
+import { clearSocket, getSocket, setSocket } from "../stores/users.store";
+import { RedisService } from "dima-backend";
+import { Combination } from "../stores/combinations.store";
 
 const app = express();
 
@@ -31,16 +31,16 @@ io.on('connect', (socket) => {
   });
 
   socket.on('disconnect', async () => {
-    const pair = await redisGetPair(+userId);
+    const pair = await RedisService.redisGetPair(+userId);
     clearSocket(+userId);
-    await redisEndGame(+userId);
+    await RedisService.redisEndGame(+userId);
     await sendEnemyLeft(+pair);
     console.log('Client disconnected');
   });
 });
 
 export const sendMessageFrom = async (fromUser: number, text: string): Promise<boolean> => {
-  const pair = await redisGetPair(fromUser);
+  const pair = await RedisService.redisGetPair(fromUser);
   if (!pair) {
     // TODO error message
     return false;
@@ -67,7 +67,7 @@ export const sendEnemyLeft = async (userId: number) => {
 
 export const sendEnemyFinished = async (userId: number) => {
   console.log('enemy finished', userId);
-  const pair = await redisGetPair(userId);
+  const pair = await RedisService.redisGetPair(userId);
   if (!pair) {
     // TODO error message
     return false;
