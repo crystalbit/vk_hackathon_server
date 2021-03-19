@@ -95,3 +95,11 @@ export const sendLose = async (userId: number, combination: Combination) => {
   }
   socket.emit('lose', combination);
 };
+
+export const sendNeutral = async (userId: number, combination: Combination) => {
+  const socket = getSocket(+userId);
+  if (!socket) {
+    return false;
+  }
+  socket.emit('neutral', combination);
+};

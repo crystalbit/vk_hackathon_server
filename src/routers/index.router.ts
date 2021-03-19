@@ -6,8 +6,9 @@ import {
   redisSetInQueue
 } from '../services/redis.service';
 import { uqMakePair } from "../services/user-queue.service";
-import {sendEnemyFinished, sendLose, sendMessageFrom, sendWin} from "../services/websocket.service";
+import {sendEnemyFinished, sendLose, sendMessageFrom, sendNeutral, sendWin} from "../services/websocket.service";
 import {Combination, getCombination, setCombination} from "../stores/combinations.store";
+import {compareCombinations} from "../services/logic.service";
 
 export const IndexRouter = express.Router();
 
@@ -80,9 +81,18 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
       const pair = await redisGetPair(+fromUserId);
       const enemyCombination = getCombination(+pair);
       if (enemyCombination) {
+        const score = compareCombinations(payloadData.stickers, enemyCombination);
         await new Promise(rs => setTimeout(rs, 1000)); // драматическая пауза
-        await sendWin(+fromUserId, enemyCombination);
-        await sendLose(+pair, payloadData.stickers);
+        if (score > 0) {
+          await sendWin(+fromUserId, enemyCombination);
+          await sendLose(+pair, payloadData.stickers);
+        } else if (score < 0) {
+          await sendLose(+fromUserId, enemyCombination);
+          await sendWin(+pair, payloadData.stickers);
+        } else {
+          await sendNeutral(+fromUserId, enemyCombination);
+          await sendNeutral(+pair, payloadData.stickers);
+        }
       }
     } else {
       res.json({ success: false });
