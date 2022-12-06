@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/app",
-    "inspect": "node --inspect -r ts-node/register ./src/app.ts"
+    "inspect": "npm run build && node --inspect out/app.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
