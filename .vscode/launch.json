@@ -9,6 +9,7 @@
       "address": "127.0.0.1",
       "port": 9229,
       "request": "attach",
+      "sourceMaps": true,
       "skipFiles": [
         "<node_internals>/**"
       ],
