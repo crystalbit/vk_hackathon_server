@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "inlineSourceMap": true,
+    "inlineSources": true,
     "target": "ES2019",
     "esModuleInterop": true,
     "module": "commonjs",
     "outDir": "out",
-    "declaration": true,
-    "sourceMap": true
+    "declaration": true
   }
 }

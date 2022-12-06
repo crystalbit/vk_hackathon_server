@@ -10,10 +10,14 @@
       "port": 9229,
       "request": "attach",
       "sourceMaps": true,
+      "localRoot": "${workspaceRoot}",
+      "remoteRoot": "/home/idbot/vk_hackathon_server",
+      "smartStep": true,
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "type": "node"
+      "type": "node",
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
