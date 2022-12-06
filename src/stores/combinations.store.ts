@@ -10,6 +10,6 @@ export const clearCombination = (user: number) => {
   UserToCombination.delete(user);
 };
 
-export const getCombination = (user: number): Combination => {
-  return UserToCombination.get(user) ?? [0, 0, 0];
+export const getCombination = (user: number): Combination | undefined => {
+  return UserToCombination.get(user);
 };
