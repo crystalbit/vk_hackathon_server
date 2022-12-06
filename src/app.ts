@@ -1,7 +1,7 @@
-import * as express from 'express';
+import express from 'express';
 import { IndexRouter } from "./routers/index.router";
 import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
+import cors from 'cors';
 
 const app = express();
 

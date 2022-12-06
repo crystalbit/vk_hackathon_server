@@ -8,7 +8,7 @@ export const IndexRouter = express.Router();
 IndexRouter.get('/my-state', (req: express.Request, res: express.Response) => {
   const userId = req.query.userId;
   (async () => {
-    const isWaiting = await redis.redisIsUserWaiting(+userId);
+    const isWaiting = await redis.redisIsUserWaiting(parseInt(`${userId}`));
     if (isWaiting) {
       res.json({
         state: 'waiting', // TODO ? isomorphic
@@ -66,22 +66,22 @@ IndexRouter.post('/action', (req: express.Request, res: express.Response) => {
       res.json({ success: true });
       // проверим, оба ли юзера отправили комбинацию, и завершим игру в таком случае
       const pair = await redis.redisGetPair(+fromUserId);
-      const enemyCombination = getCombination(+pair);
+      const enemyCombination = getCombination(+(pair ?? 0));
       if (enemyCombination) {
         const score = compareCombinations(payloadData.stickers, enemyCombination);
         await new Promise(rs => setTimeout(rs, 1000)); // драматическая пауза
         if (score > 0) {
           await sockets.sendWin(+fromUserId, enemyCombination);
-          await sockets.sendLose(+pair, payloadData.stickers);
+          await sockets.sendLose(+(pair ?? 0), payloadData.stickers);
         } else if (score < 0) {
           await sockets.sendLose(+fromUserId, enemyCombination);
-          await sockets.sendWin(+pair, payloadData.stickers);
+          await sockets.sendWin(+(pair ?? 0), payloadData.stickers);
         } else {
           await sockets.sendNeutral(+fromUserId, enemyCombination);
-          await sockets.sendNeutral(+pair, payloadData.stickers);
+          await sockets.sendNeutral(+(pair ?? 0), payloadData.stickers);
         }
         clearCombination(+fromUserId);
-        clearCombination(+pair);
+        clearCombination(+(pair ?? 0));
       }
     } else {
       res.json({ success: false });

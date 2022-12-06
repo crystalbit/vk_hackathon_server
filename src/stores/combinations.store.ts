@@ -11,5 +11,5 @@ export const clearCombination = (user: number) => {
 };
 
 export const getCombination = (user: number): Combination => {
-  return UserToCombination.get(user);
+  return UserToCombination.get(user) ?? [0, 0, 0];
 };
